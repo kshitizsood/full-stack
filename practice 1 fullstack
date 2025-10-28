@@ -1,0 +1,86 @@
+// ===== server.js (Backend + Frontend example in one file) =====
+/*
+To run:
+1️⃣ Run this backend:  node server.js
+2️⃣ Create a React app (npx create-react-app client)
+3️⃣ Replace the contents of client/src/App.js with the React code below.
+4️⃣ Run React frontend: npm start
+*/
+
+///////////////////////
+// Backend (Express)
+///////////////////////
+const express = require("express");
+const cors = require("cors");
+const app = express();
+
+app.use(cors()); // allow frontend to connect
+
+// Sample product data
+const products = [
+  { id: 1, name: "Laptop", price: 75000 },
+  { id: 2, name: "Smartphone", price: 30000 },
+  { id: 3, name: "Headphones", price: 2000 },
+];
+
+// API endpoint
+app.get("/api/products", (req, res) => {
+  res.json(products);
+});
+
+app.listen(5000, () => console.log("✅ Express API running on http://localhost:5000"));
+
+///////////////////////
+// Frontend (React App - App.js)
+///////////////////////
+/*
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+function App() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/products")
+      .then((response) => {
+        setProducts(response.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to fetch products");
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <h2>Loading products...</h2>;
+  if (error) return <h2 style={{ color: "red" }}>{error}</h2>;
+
+  return (
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <h1>🛍️ Product List</h1>
+      {products.map((product) => (
+        <div
+          key={product.id}
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "10px",
+            marginBottom: "10px",
+            textAlign: "left",
+            width: "300px",
+            margin: "auto",
+          }}
+        >
+          <h3>{product.name}</h3>
+          <p>💰 Price: ₹{product.price}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default App;
+*/
