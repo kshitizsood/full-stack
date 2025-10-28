@@ -1,0 +1,89 @@
+import React, { useState } from "react";
+
+function App() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!username || !password) {
+      setError("Both username and password are required!");
+      return;
+    }
+
+    setError("");
+    console.log("Username:", username);
+    console.log("Password:", password);
+    alert(`Login successful for ${username}`);
+  };
+
+  return (
+    <div style={styles.container}>
+      <h2 style={styles.title}>Login Form</h2>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <input
+          type="text"
+          placeholder="Enter Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          style={styles.input}
+        />
+        <input
+          type="password"
+          placeholder="Enter Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={styles.input}
+        />
+        {error && <p style={styles.error}>{error}</p>}
+        <button type="submit" style={styles.button}>
+          Login
+        </button>
+      </form>
+    </div>
+  );
+}
+
+const styles = {
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100vh",
+    backgroundColor: "#f7f7f7",
+  },
+  title: {
+    fontSize: "26px",
+    marginBottom: "20px",
+    color: "#333",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    width: "300px",
+  },
+  input: {
+    padding: "10px",
+    marginBottom: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+  },
+  button: {
+    padding: "10px",
+    backgroundColor: "#007BFF",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  error: {
+    color: "red",
+    fontSize: "14px",
+    marginBottom: "10px",
+  },
+};
+
+export default App;
