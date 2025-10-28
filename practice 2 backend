@@ -1,0 +1,92 @@
+// Filename: server.js
+// Run: npm install express mongoose jsonwebtoken bcryptjs body-parser
+// Then: node server.js
+
+const express = require("express");
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const bodyParser = require("body-parser");
+
+const app = express();
+app.use(bodyParser.json());
+
+const JWT_SECRET = "securebankingsecret"; // Secret key for JWT signing
+
+// MongoDB connection
+mongoose
+  .connect("mongodb://127.0.0.1:27017/bankingDB", { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.log(err));
+
+// Schema & Model
+const userSchema = new mongoose.Schema({
+  username: String,
+  password: String,
+  balance: Number,
+});
+const User = mongoose.model("User", userSchema);
+
+// 🔹 Middleware to verify JWT token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // "Bearer <token>"
+  if (!token) return res.status(401).json({ error: "Access denied, token missing" });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Invalid or expired token" });
+    req.user = user;
+    next();
+  });
+};
+
+// 🔹 Route: User registration (for testing)
+app.post("/register", async (req, res) => {
+  const { username, password, balance } = req.body;
+  const hashed = await bcrypt.hash(password, 10);
+  await User.create({ username, password: hashed, balance });
+  res.json({ message: "User registered successfully" });
+});
+
+// 🔹 Route: Login -> Generate JWT
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ username });
+  if (!user) return res.status(400).json({ error: "User not found" });
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+
+  const token = jwt.sign({ username: user.username, id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+  res.json({ message: "Login successful", token });
+});
+
+// 🔹 Protected Route: Check Balance
+app.get("/balance", authenticateToken, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  res.json({ username: user.username, balance: user.balance });
+});
+
+// 🔹 Protected Route: Deposit
+app.post("/deposit", authenticateToken, async (req, res) => {
+  const { amount } = req.body;
+  const user = await User.findById(req.user.id);
+  user.balance += amount;
+  await user.save();
+  res.json({ message: `Deposited ₹${amount}`, new_balance: user.balance });
+});
+
+// 🔹 Protected Route: Withdraw
+app.post("/withdraw", authenticateToken, async (req, res) => {
+  const { amount } = req.body;
+  const user = await User.findById(req.user.id);
+
+  if (user.balance < amount) return res.status(400).json({ error: "Insufficient balance" });
+
+  user.balance -= amount;
+  await user.save();
+  res.json({ message: `Withdrawn ₹${amount}`, new_balance: user.balance });
+});
+
+// Start server
+app.listen(3000, () => console.log("Server running on port 3000"));
